@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Odliczanie do Otwarcia Serwera</title>
   <!-- Import wikingowego / klimatycznego fontu ze Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://googleapis.com">
+  <link rel="preconnect" href="https://gstatic.com" crossorigin>
+  <link href="https://googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
   
   <style>
     * {
@@ -21,18 +23,19 @@
       align-items: center;
       min-height: 100vh;
       font-family: 'Cinzel', serif, sans-serif;
+      padding: 30px; /* Elegancki margines wokół całej karty */
     }
 
-    /* Główny kontener z grafiką w tle */
+    /* Główny kontener - teraz jako pomniejszona karta na środku ekranu */
     .banner-container {
       position: relative;
       width: 100%;
-      max-width: 1200px;
-      height: 675px;
-      /* Podmień nazwę pliku obrazu na swój baner */
-      background: url('baner_valheim.jpg') center/cover no-repeat;
-      border-radius: 8px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      max-width: 1200px; /* Ograniczona szerokość, żeby nie był na full ekranu */
+      aspect-ratio: 1408 / 752; /* Zachowanie idealnych proporcji Twojego obrazka */
+      background: url('baner_valheim.jpg') center center / cover no-repeat;
+      border-radius: 16px; /* Bardziej zaokrąglone krawędzie */
+      border: 2px solid #23333f; /* Subtelna ramka wokół baneru */
+      box-shadow: 0 20px 50px rgba(0,0,0,0.7); /* Głęboki cień nadający trójwymiarowość */
       overflow: hidden;
     }
 
@@ -41,18 +44,18 @@
       position: absolute;
       right: 5%;
       top: 50%;
-      transform: translateY(-40%);
-      width: 280px;
+      transform: translateY(-50%);
+      width: 290px;
       text-align: center;
       padding: 20px;
-      background: rgba(243, 235, 211, 0.85); /* subtelne tło w kolorze pergaminu */
+      background: rgba(243, 235, 211, 0.9); /* subtelne tło w kolorze pergaminu */
       border: 3px solid #4a3520;
       border-radius: 12px;
       box-shadow: inset 0 0 15px rgba(0,0,0,0.3), 0 4px 15px rgba(0,0,0,0.5);
     }
 
     .countdown-title {
-      font-size: 16px;
+      font-size: 15px;
       color: #2b1d0c;
       font-weight: bold;
       text-transform: uppercase;
@@ -65,6 +68,7 @@
       display: flex;
       justify-content: space-around;
       gap: 5px;
+      margin-bottom: 20px;
     }
 
     .time-unit {
@@ -74,14 +78,14 @@
     }
 
     .number {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: bold;
       color: #1a1005;
       background: #e8dbb8;
       border: 2px solid #5c4228;
       border-radius: 6px;
-      padding: 6px 10px;
-      min-width: 55px;
+      padding: 6px 8px;
+      min-width: 58px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
@@ -92,26 +96,102 @@
       text-transform: uppercase;
       font-weight: bold;
     }
+
+    /* Sekcja Statusu Serwera Valheim */
+    .server-status {
+      border-top: 2px dashed #5c4228;
+      padding-top: 15px;
+      margin-top: 10px;
+    }
+
+    .status-title {
+      font-size: 12px;
+      color: #4a3520;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #1a1005;
+      font-weight: bold;
+    }
+
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: #7f8c8d;
+      box-shadow: 0 0 8px rgba(0,0,0,0.3);
+    }
+
+    .status-dot.online {
+      background-color: #27ae60;
+      box-shadow: 0 0 10px #2ecc71;
+    }
+
+    .status-dot.offline {
+      background-color: #c0392b;
+      box-shadow: 0 0 10px #e74c3c;
+    }
+
+    /* Responsywność dla małych ekranów (np. telefony) */
+    @media (max-width: 768px) {
+      body {
+        padding: 15px;
+      }
+      .banner-container {
+        aspect-ratio: auto;
+        height: auto;
+        min-height: 450px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-position: 35% center;
+      }
+      .countdown-box {
+        position: relative;
+        right: auto;
+        top: auto;
+        transform: none;
+        margin: 20px auto;
+      }
+    }
   </style>
 </head>
 <body>
 
   <div class="banner-container">
-    <!-- Pudełko z licznikiem -->
+    <!-- Pudełko z licznikiem i statusem -->
     <div class="countdown-box">
-      <div class="countdown-title">Do otwarcia pozostało:</div>
-      <div class="timer">
-        <div class="time-unit">
-          <span class="number" id="hours">00</span>
-          <span class="label">Godz</span>
+      <div id="countdown-wrapper">
+        <div class="countdown-title">Do otwarcia pozostało:</div>
+        <div class="timer">
+          <div class="time-unit">
+            <span class="number" id="hours">00</span>
+            <span class="label">Godz</span>
+          </div>
+          <div class="time-unit">
+            <span class="number" id="minutes">00</span>
+            <span class="label">Min</span>
+          </div>
+          <div class="time-unit">
+            <span class="number" id="seconds">00</span>
+            <span class="label">Sek</span>
+          </div>
         </div>
-        <div class="time-unit">
-          <span class="number" id="minutes">00</span>
-          <span class="label">Min</span>
-        </div>
-        <div class="time-unit">
-          <span class="number" id="seconds">00</span>
-          <span class="label">Sek</span>
+      </div>
+
+      <!-- Sekcja Statusu Serwera Valheim -->
+      <div class="server-status">
+        <div class="status-title">Status Serwera:</div>
+        <div class="status-badge">
+          <span class="status-dot" id="status-dot"></span>
+          <span id="status-text">Sprawdzanie...</span>
         </div>
       </div>
     </div>
@@ -126,25 +206,63 @@
       const difference = targetDate - now;
 
       if (difference <= 0) {
-        document.querySelector('.countdown-box').innerHTML = 
-          "<div style='font-size: 22px; color: #2b1d0c; font-weight: bold;'>SERWER OTWARTY!</div>";
+        document.getElementById('countdown-wrapper').innerHTML = 
+          "<div style='font-size: 20px; color: #2b1d0c; font-weight: bold; margin-bottom: 15px;'>SERWER JEST OTWARTY!</div>";
         return;
       }
 
-      // Obliczanie łącznej liczby godzin (włączając dni), minut i sekund
       const hours = Math.floor(difference / (1000 * 60 * 60));
       const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-      // Wyświetlanie z zerem na początku (np. 05 zamiast 5)
       document.getElementById("hours").innerText = String(hours).padStart(2, '0');
       document.getElementById("minutes").innerText = String(minutes).padStart(2, '0');
       document.getElementById("seconds").innerText = String(seconds).padStart(2, '0');
     }
 
-    // Odświeżanie co sekundę
     updateCountdown();
     setInterval(updateCountdown, 1000);
+
+    // === SPRAWDZANIE STATUSU SERWERA VALHEIM Z POMINIĘCIEM CORS DLA GITHUB PAGES ===
+    const SERVER_IP = "89.69.145.218";
+    const SERVER_PORT = "2456"; // Dla API Steam podajemy podstawowy port gry
+
+    async function checkValheimServer() {
+      const dot = document.getElementById("status-dot");
+      const text = document.getElementById("status-text");
+
+      try {
+        // Wykorzystujemy publiczne, darmowe proxy "cors-anywhere" (lub allorigins), aby ominąć blokadę CORS na GitHub Pages
+        const steamApiUrl = `https://steampowered.com{SERVER_IP}:${SERVER_PORT}`;
+        const proxyUrl = `https://allorigins.win{encodeURIComponent(steamApiUrl)}`;
+
+        const response = await fetch(proxyUrl);
+        
+        if (!response.ok) {
+          throw new Error("Problem z bramką Proxy / Steam API");
+        }
+
+        const wrapperData = await response.json();
+        // Bramka allorigins pakuje oryginalną odpowiedź jako ciąg tekstowy w pole 'contents'
+        const data = JSON.parse(wrapperData.contents);
+
+        if (data && data.response && data.response.success && data.response.servers && data.response.servers.length > 0) {
+          dot.className = "status-dot online";
+          text.innerText = "ONLINE";
+        } else {
+          dot.className = "status-dot offline";
+          text.innerText = "OFFLINE";
+        }
+      } catch (error) {
+        console.error("Błąd pobierania statusu na GitHub Pages:", error);
+        dot.className = "status-dot offline";
+        text.innerText = "OFFLINE"; 
+      }
+    }
+
+    // Uruchomienie i odświeżanie co 60 sekund (zalecane dla publicznych proxy)
+    checkValheimServer();
+    setInterval(checkValheimServer, 60000);
   </script>
 
 </body>
