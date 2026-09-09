@@ -253,7 +253,13 @@
 
         if (data && data.status === "online") {
           dot.className = "status-dot online";
-          text.innerText = "ONLINE";
+          
+          // Jeśli json zawiera dane o graczech, wyświetla np. ONLINE (3/10)
+          if (data.players !== undefined && data.maxPlayers !== undefined && data.maxPlayers > 0) {
+            text.innerText = `ONLINE (${data.players}/${data.maxPlayers})`;
+          } else {
+            text.innerText = "ONLINE";
+          }
         } else {
           dot.className = "status-dot offline";
           text.innerText = "OFFLINE";
