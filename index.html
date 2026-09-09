@@ -1,5 +1,5 @@
 <script>
-  // === 1. ODLICZANIE DO 23:00 DZISIAJ ===
+  // === 1. ODLICZANIE DO 23:00 (NIE WPŁYWA NA STATUS) ===
   const now = new Date();
   const targetDate = new Date(
     now.getFullYear(),
@@ -30,22 +30,23 @@
   updateCountdown();
   setInterval(updateCountdown, 1000);
 
-  // === 2. ODCZYT STATUSU Z STATUS.JSON ===
+  // === 2. STATUS SERWERA (NIE ZALEŻY OD CZASU ODLICZANIA) ===
   async function checkValheimServer() {
     const dot = document.getElementById("status-dot");
     const text = document.getElementById("status-text");
 
     try {
-      // Pobieranie status.json bez pamięci podręcznej (cache)
-      const response = await fetch('./status.json?t=' + new Date().getTime());
+      // Ścieżka relatywna do status.json w tym samym katalogu
+      const response = await fetch('status.json?t=' + Date.now());
       
       if (!response.ok) {
-        throw new Error("Plik status.json nieodnaleziony");
+        throw new Error("HTTP error " + response.status);
       }
 
       const data = await response.json();
 
-      if (data.status === "online") {
+      // Działanie wyłącznie na podstawie wartości z pliku JSON
+      if (data && data.status === "online") {
         dot.className = "status-dot online";
         text.innerText = "ONLINE";
       } else {
@@ -53,13 +54,13 @@
         text.innerText = "OFFLINE";
       }
     } catch (error) {
-      console.error("Błąd odczytu statusu:", error);
+      console.error("Błąd pobierania status.json:", error);
       dot.className = "status-dot offline";
-      text.innerText = "OFFLINE"; 
+      text.innerText = "OFFLINE";
     }
   }
 
-  // Sprawdzanie statusu od razu i odświeżanie co 15 sekund
+  // Wymuszenie weryfikacji od razu po załadowaniu
   checkValheimServer();
-  setInterval(checkValheimServer, 15000);
+  setInterval(checkValheimServer, 10000);
 </script>
