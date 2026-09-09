@@ -42,10 +42,10 @@
       right: 5%;
       top: 50%;
       transform: translateY(-50%);
-      width: 290px;
+      width: 310px;
       text-align: center;
       padding: 20px;
-      background: rgba(243, 235, 211, 0.9);
+      background: rgba(243, 235, 211, 0.92);
       border: 3px solid #4a3520;
       border-radius: 12px;
       box-shadow: inset 0 0 15px rgba(0,0,0,0.3), 0 4px 15px rgba(0,0,0,0.5);
@@ -93,6 +93,7 @@
       font-weight: bold;
     }
 
+    /* Stylistyka Tabelki Statusu Serwera */
     .server-status {
       border-top: 2px dashed #5c4228;
       padding-top: 15px;
@@ -100,37 +101,67 @@
     }
 
     .status-title {
-      font-size: 12px;
+      font-size: 13px;
       color: #4a3520;
       text-transform: uppercase;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .status-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      color: #1a1005;
+    }
+
+    .status-table tr {
+      border-bottom: 1px solid rgba(92, 66, 40, 0.2);
+    }
+
+    .status-table tr:last-child {
+      border-bottom: none;
+    }
+
+    .status-table td {
+      padding: 6px 4px;
+    }
+
+    .status-table .label-col {
+      text-align: left;
+      font-weight: bold;
+      color: #4a3520;
+    }
+
+    .status-table .value-col {
+      text-align: right;
+      font-weight: bold;
     }
 
     .status-badge {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      color: #1a1005;
-      font-weight: bold;
+      gap: 6px;
     }
 
     .status-dot {
-      width: 12px;
-      height: 12px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       background-color: #7f8c8d;
-      box-shadow: 0 0 8px rgba(0,0,0,0.3);
+      box-shadow: 0 0 6px rgba(0,0,0,0.3);
+      display: inline-block;
     }
 
     .status-dot.online {
-      background-color: #27ae60;
-      box-shadow: 0 0 10px #2ecc71;
+      background-color: #229954;
+      box-shadow: 0 0 8px #2ecc71;
     }
 
     .status-dot.offline {
       background-color: #c0392b;
-      box-shadow: 0 0 10px #e74c3c;
+      box-shadow: 0 0 8px #e74c3c;
     }
 
     @media (max-width: 768px) {
@@ -179,12 +210,28 @@
         </div>
       </div>
 
+      <!-- TABELA STATUSU SERWERA -->
       <div class="server-status">
-        <div class="status-title">Status Serwera:</div>
-        <div class="status-badge">
-          <span class="status-dot" id="status-dot"></span>
-          <span id="status-text">Sprawdzanie...</span>
-        </div>
+        <div class="status-title">Informacje o Serwerze</div>
+        <table class="status-table">
+          <tr>
+            <td class="label-col">Status:</td>
+            <td class="value-col">
+              <span class="status-badge">
+                <span class="status-dot" id="status-dot"></span>
+                <span id="status-text">Sprawdzanie...</span>
+              </span>
+            </td>
+          </tr>
+          <tr>
+            <td class="label-col">Gracze online:</td>
+            <td class="value-col" id="players-count">-</td>
+          </tr>
+          <tr>
+            <td class="label-col">Maks. miejsc:</td>
+            <td class="value-col" id="max-players">-</td>
+          </tr>
+        </table>
       </div>
     </div>
   </div>
@@ -239,6 +286,8 @@
     async function checkValheimServer() {
       const dot = document.getElementById("status-dot");
       const text = document.getElementById("status-text");
+      const playersEl = document.getElementById("players-count");
+      const maxPlayersEl = document.getElementById("max-players");
 
       if (!dot || !text) return;
 
@@ -253,20 +302,22 @@
 
         if (data && data.status === "online") {
           dot.className = "status-dot online";
-          
-          // Jeśli json zawiera dane o graczech, wyświetla np. ONLINE (3/10)
-          if (data.players !== undefined && data.maxPlayers !== undefined && data.maxPlayers > 0) {
-            text.innerText = `ONLINE (${data.players}/${data.maxPlayers})`;
-          } else {
-            text.innerText = "ONLINE";
-          }
+          text.innerText = "ONLINE";
+
+          // Wpisanie danych o graczach do osobnych komórek tabeli
+          playersEl.innerText = data.players !== undefined ? data.players : "0";
+          maxPlayersEl.innerText = data.maxPlayers !== undefined && data.maxPlayers > 0 ? data.maxPlayers : "10";
         } else {
           dot.className = "status-dot offline";
           text.innerText = "OFFLINE";
+          playersEl.innerText = "0";
+          maxPlayersEl.innerText = "-";
         }
       } catch (error) {
         dot.className = "status-dot offline";
         text.innerText = "OFFLINE";
+        if (playersEl) playersEl.innerText = "0";
+        if (maxPlayersEl) maxPlayersEl.innerText = "-";
       }
     }
 
