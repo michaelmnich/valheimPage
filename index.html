@@ -1,66 +1,263 @@
-<script>
-  // === 1. ODLICZANIE DO 23:00 (NIE WPŁYWA NA STATUS) ===
-  const now = new Date();
-  const targetDate = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-    23, 0, 0
-  ).getTime();
-
-  function updateCountdown() {
-    const currentTime = new Date().getTime();
-    const difference = targetDate - currentTime;
-
-    if (difference <= 0) {
-      document.getElementById('countdown-wrapper').innerHTML = 
-        "<div style='font-size: 20px; color: #2b1d0c; font-weight: bold; margin-bottom: 15px;'>SERWER JEST OTWARTY!</div>";
-      return;
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Odliczanie do Otwarcia Serwera</title>
+  <!-- Import wikingowego / klimatycznego fontu ze Google Fonts -->
+  <link rel="preconnect" href="https://googleapis.com">
+  <link rel="preconnect" href="https://gstatic.com" crossorigin>
+  <link href="https://googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
-    const hours = Math.floor(difference / (1000 * 60 * 60));
-    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+    body {
+      background-color: #0b1319;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: 'Cinzel', serif, sans-serif;
+      padding: 30px;
+    }
 
-    document.getElementById("hours").innerText = String(hours).padStart(2, '0');
-    document.getElementById("minutes").innerText = String(minutes).padStart(2, '0');
-    document.getElementById("seconds").innerText = String(seconds).padStart(2, '0');
-  }
+    /* Główny kontener */
+    .banner-container {
+      position: relative;
+      width: 100%;
+      max-width: 1200px;
+      aspect-ratio: 1408 / 752;
+      background: url('baner_valheim.jpg') center center / cover no-repeat;
+      border-radius: 16px;
+      border: 2px solid #23333f;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+      overflow: hidden;
+    }
 
-  updateCountdown();
-  setInterval(updateCountdown, 1000);
+    /* Prawa sekcja */
+    .countdown-box {
+      position: absolute;
+      right: 5%;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 290px;
+      text-align: center;
+      padding: 20px;
+      background: rgba(243, 235, 211, 0.9);
+      border: 3px solid #4a3520;
+      border-radius: 12px;
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.3), 0 4px 15px rgba(0,0,0,0.5);
+    }
 
-  // === 2. STATUS SERWERA (NIE ZALEŻY OD CZASU ODLICZANIA) ===
-  async function checkValheimServer() {
-    const dot = document.getElementById("status-dot");
-    const text = document.getElementById("status-text");
+    .countdown-title {
+      font-size: 15px;
+      color: #2b1d0c;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 15px;
+      letter-spacing: 1px;
+    }
 
-    try {
-      // Ścieżka relatywna do status.json w tym samym katalogu
-      const response = await fetch('status.json?t=' + Date.now());
-      
-      if (!response.ok) {
-        throw new Error("HTTP error " + response.status);
+    /* Kafelki odliczania */
+    .timer {
+      display: flex;
+      justify-content: space-around;
+      gap: 5px;
+      margin-bottom: 20px;
+    }
+
+    .time-unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .number {
+      font-size: 26px;
+      font-weight: bold;
+      color: #1a1005;
+      background: #e8dbb8;
+      border: 2px solid #5c4228;
+      border-radius: 6px;
+      padding: 6px 8px;
+      min-width: 58px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .label {
+      font-size: 11px;
+      color: #4a3520;
+      margin-top: 6px;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
+    /* Sekcja Statusu Serwera Valheim */
+    .server-status {
+      border-top: 2px dashed #5c4228;
+      padding-top: 15px;
+      margin-top: 10px;
+    }
+
+    .status-title {
+      font-size: 12px;
+      color: #4a3520;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #1a1005;
+      font-weight: bold;
+    }
+
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: #7f8c8d;
+      box-shadow: 0 0 8px rgba(0,0,0,0.3);
+    }
+
+    .status-dot.online {
+      background-color: #27ae60;
+      box-shadow: 0 0 10px #2ecc71;
+    }
+
+    .status-dot.offline {
+      background-color: #c0392b;
+      box-shadow: 0 0 10px #e74c3c;
+    }
+
+    /* Responsywność */
+    @media (max-width: 768px) {
+      body {
+        padding: 15px;
+      }
+      .banner-container {
+        aspect-ratio: auto;
+        height: auto;
+        min-height: 450px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-position: 35% center;
+      }
+      .countdown-box {
+        position: relative;
+        right: auto;
+        top: auto;
+        transform: none;
+        margin: 20px auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="banner-container">
+    <div class="countdown-box">
+      <div id="countdown-wrapper">
+        <div class="countdown-title">Do otwarcia pozostało:</div>
+        <div class="timer">
+          <div class="time-unit">
+            <span class="number" id="hours">00</span>
+            <span class="label">Godz</span>
+          </div>
+          <div class="time-unit">
+            <span class="number" id="minutes">00</span>
+            <span class="label">Min</span>
+          </div>
+          <div class="time-unit">
+            <span class="number" id="seconds">00</span>
+            <span class="label">Sek</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="server-status">
+        <div class="status-title">Status Serwera:</div>
+        <div class="status-badge">
+          <span class="status-dot" id="status-dot"></span>
+          <span id="status-text">Sprawdzanie...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === ODLICZANIE DO DZIŚ DO 23:00 ===
+    const now = new Date();
+    const targetDate = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      23, 0, 0
+    ).getTime();
+
+    function updateCountdown() {
+      const currentTime = new Date().getTime();
+      const difference = targetDate - currentTime;
+
+      if (difference <= 0) {
+        document.getElementById('countdown-wrapper').innerHTML = 
+          "<div style='font-size: 20px; color: #2b1d0c; font-weight: bold; margin-bottom: 15px;'>SERWER JEST OTWARTY!</div>";
+        return;
       }
 
-      const data = await response.json();
+      const hours = Math.floor(difference / (1000 * 60 * 60));
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-      // Działanie wyłącznie na podstawie wartości z pliku JSON
-      if (data && data.status === "online") {
-        dot.className = "status-dot online";
-        text.innerText = "ONLINE";
-      } else {
+      document.getElementById("hours").innerText = String(hours).padStart(2, '0');
+      document.getElementById("minutes").innerText = String(minutes).padStart(2, '0');
+      document.getElementById("seconds").innerText = String(seconds).padStart(2, '0');
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // === ODCZYT STATUSU Z PLIKU STATUS.JSON ===
+    async function checkValheimServer() {
+      const dot = document.getElementById("status-dot");
+      text = document.getElementById("status-text");
+
+      try {
+        const response = await fetch('./status.json?t=' + Date.now());
+        
+        if (!response.ok) {
+          throw new Error("Plik status.json nie istnieje");
+        }
+
+        const data = await response.json();
+
+        if (data && data.status === "online") {
+          dot.className = "status-dot online";
+          text.innerText = "ONLINE";
+        } else {
+          dot.className = "status-dot offline";
+          text.innerText = "OFFLINE";
+        }
+      } catch (error) {
+        console.warn("Brak pliku status.json:", error);
         dot.className = "status-dot offline";
         text.innerText = "OFFLINE";
       }
-    } catch (error) {
-      console.error("Błąd pobierania status.json:", error);
-      dot.className = "status-dot offline";
-      text.innerText = "OFFLINE";
     }
-  }
 
-  // Wymuszenie weryfikacji od razu po załadowaniu
-  checkValheimServer();
-  setInterval(checkValheimServer, 10000);
-</script>
+    checkValheimServer();
+    setInterval(checkValheimServer, 10000);
+  </script>
+
+</body>
+</html>
