@@ -93,7 +93,6 @@
       font-weight: bold;
     }
 
-    /* Stylistyka Tabelki Statusu Serwera */
     .server-status {
       border-top: 2px dashed #5c4228;
       padding-top: 15px;
@@ -193,7 +192,7 @@
   <div class="banner-container">
     <div class="countdown-box">
       <div id="countdown-wrapper">
-        <div class="countdown-title">Do otwarcia pozostało:</div>
+        <div class="countdown-title" id="timer-title">Do otwarcia pozostało:</div>
         <div class="timer">
           <div class="time-unit">
             <span class="number" id="hours">00</span>
@@ -247,41 +246,37 @@
 
     let countdownTimer = null;
 
-    function updateCountdown() {
+    function updateTimer() {
       const currentTime = new Date().getTime();
-      const difference = targetDate - currentTime;
-
-      const wrapper = document.getElementById('countdown-wrapper');
-
-      if (difference <= 0) {
-        if (wrapper) {
-          wrapper.innerHTML = "<div style='font-size: 20px; color: #2b1d0c; font-weight: bold; margin-bottom: 15px;'>SERWER JEST OTWARTY!</div>";
-        }
-        if (countdownTimer) {
-          clearInterval(countdownTimer);
-        }
-        return;
-      }
-
+      const titleEl = document.getElementById("timer-title");
       const hoursEl = document.getElementById("hours");
       const minutesEl = document.getElementById("minutes");
       const secondsEl = document.getElementById("seconds");
 
-      if (!hoursEl || !minutesEl || !secondsEl) {
-        return;
+      if (!hoursEl || !minutesEl || !secondsEl) return;
+
+      let timeDifference = targetDate - currentTime;
+
+      // Sprawdzenie, czy data otwarcia już minęła
+      if (timeDifference <= 0) {
+        if (titleEl) titleEl.innerText = "Czas działania serwera:";
+        // Przeliczamy czas od momentu otwarcia (wartość dodatnia)
+        timeDifference = currentTime - targetDate;
+      } else {
+        if (titleEl) titleEl.innerText = "Do otwarcia pozostało:";
       }
 
-      const hours = Math.floor(difference / (1000 * 60 * 60));
-      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+      const hours = Math.floor(timeDifference / (1000 * 60 * 60));
+      const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
 
       hoursEl.innerText = String(hours).padStart(2, '0');
       minutesEl.innerText = String(minutes).padStart(2, '0');
       secondsEl.innerText = String(seconds).padStart(2, '0');
     }
 
-    updateCountdown();
-    countdownTimer = setInterval(updateCountdown, 1000);
+    updateTimer();
+    countdownTimer = setInterval(updateTimer, 1000);
 
     async function checkValheimServer() {
       const dot = document.getElementById("status-dot");
@@ -304,7 +299,6 @@
           dot.className = "status-dot online";
           text.innerText = "ONLINE";
 
-          // Wpisanie danych o graczach do osobnych komórek tabeli
           playersEl.innerText = data.players !== undefined ? data.players : "0";
           maxPlayersEl.innerText = data.maxPlayers !== undefined && data.maxPlayers > 0 ? data.maxPlayers : "10";
         } else {
