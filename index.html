@@ -198,13 +198,29 @@
       23, 0, 0
     ).getTime();
 
+    let countdownTimer = null;
+
     function updateCountdown() {
       const currentTime = new Date().getTime();
       const difference = targetDate - currentTime;
 
+      const wrapper = document.getElementById('countdown-wrapper');
+
       if (difference <= 0) {
-        document.getElementById('countdown-wrapper').innerHTML = 
-          "<div style='font-size: 20px; color: #2b1d0c; font-weight: bold; margin-bottom: 15px;'>SERWER JEST OTWARTY!</div>";
+        if (wrapper) {
+          wrapper.innerHTML = "<div style='font-size: 20px; color: #2b1d0c; font-weight: bold; margin-bottom: 15px;'>SERWER JEST OTWARTY!</div>";
+        }
+        if (countdownTimer) {
+          clearInterval(countdownTimer);
+        }
+        return;
+      }
+
+      const hoursEl = document.getElementById("hours");
+      const minutesEl = document.getElementById("minutes");
+      const secondsEl = document.getElementById("seconds");
+
+      if (!hoursEl || !minutesEl || !secondsEl) {
         return;
       }
 
@@ -212,17 +228,19 @@
       const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-      document.getElementById("hours").innerText = String(hours).padStart(2, '0');
-      document.getElementById("minutes").innerText = String(minutes).padStart(2, '0');
-      document.getElementById("seconds").innerText = String(seconds).padStart(2, '0');
+      hoursEl.innerText = String(hours).padStart(2, '0');
+      minutesEl.innerText = String(minutes).padStart(2, '0');
+      secondsEl.innerText = String(seconds).padStart(2, '0');
     }
 
     updateCountdown();
-    setInterval(updateCountdown, 1000);
+    countdownTimer = setInterval(updateCountdown, 1000);
 
     async function checkValheimServer() {
       const dot = document.getElementById("status-dot");
       const text = document.getElementById("status-text");
+
+      if (!dot || !text) return;
 
       try {
         const response = await fetch('./status.json?t=' + Date.now());
