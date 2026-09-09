@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Odliczanie do Otwarcia Serwera</title>
-  <!-- Import wikingowego / klimatycznego fontu ze Google Fonts -->
   <link rel="preconnect" href="https://googleapis.com">
   <link rel="preconnect" href="https://gstatic.com" crossorigin>
   <link href="https://googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
@@ -26,7 +25,6 @@
       padding: 30px;
     }
 
-    /* Główny kontener */
     .banner-container {
       position: relative;
       width: 100%;
@@ -39,7 +37,6 @@
       overflow: hidden;
     }
 
-    /* Prawa sekcja */
     .countdown-box {
       position: absolute;
       right: 5%;
@@ -63,7 +60,6 @@
       letter-spacing: 1px;
     }
 
-    /* Kafelki odliczania */
     .timer {
       display: flex;
       justify-content: space-around;
@@ -97,7 +93,6 @@
       font-weight: bold;
     }
 
-    /* Sekcja Statusu Serwera Valheim */
     .server-status {
       border-top: 2px dashed #5c4228;
       padding-top: 15px;
@@ -138,7 +133,6 @@
       box-shadow: 0 0 10px #e74c3c;
     }
 
-    /* Responsywność */
     @media (max-width: 768px) {
       body {
         padding: 15px;
@@ -196,7 +190,6 @@
   </div>
 
   <script>
-    // === ODLICZANIE DO DZIŚ DO 23:00 ===
     const now = new Date();
     const targetDate = new Date(
       now.getFullYear(),
@@ -227,16 +220,15 @@
     updateCountdown();
     setInterval(updateCountdown, 1000);
 
-    // === ODCZYT STATUSU Z PLIKU STATUS.JSON ===
     async function checkValheimServer() {
       const dot = document.getElementById("status-dot");
-      text = document.getElementById("status-text");
+      const text = document.getElementById("status-text");
 
       try {
         const response = await fetch('./status.json?t=' + Date.now());
         
         if (!response.ok) {
-          throw new Error("Plik status.json nie istnieje");
+          throw new Error("Brak status.json");
         }
 
         const data = await response.json();
@@ -249,7 +241,6 @@
           text.innerText = "OFFLINE";
         }
       } catch (error) {
-        console.warn("Brak pliku status.json:", error);
         dot.className = "status-dot offline";
         text.innerText = "OFFLINE";
       }
