@@ -1,6 +1,5 @@
 <script>
-  // === CONFIGURATION ===
-  // Dynamicznie ustawia dzisiejszą datę z godziną 23:00:00
+  // === 1. ODLICZANIE DO 23:00 DZISIAJ ===
   const now = new Date();
   const targetDate = new Date(
     now.getFullYear(),
@@ -9,7 +8,6 @@
     23, 0, 0
   ).getTime();
 
-  // === COUNTDOWN FUNCTION ===
   function updateCountdown() {
     const currentTime = new Date().getTime();
     const difference = targetDate - currentTime;
@@ -29,22 +27,20 @@
     document.getElementById("seconds").innerText = String(seconds).padStart(2, '0');
   }
 
-  // Uruchomienie odliczania (co 1 sekundę)
   updateCountdown();
   setInterval(updateCountdown, 1000);
 
-  // === SERVER STATUS CHECK (VIA C# GITHUB STATUS.JSON) ===
+  // === 2. ODCZYT STATUSU Z STATUS.JSON ===
   async function checkValheimServer() {
     const dot = document.getElementById("status-dot");
     const text = document.getElementById("status-text");
 
     try {
-      // Pobieranie status.json wygenerowanego przez aplikację C#
-      // Dodany parametr ?t= zapobiega buforowaniu pliku przez przeglądarkę
+      // Pobieranie status.json bez pamięci podręcznej (cache)
       const response = await fetch('./status.json?t=' + new Date().getTime());
       
       if (!response.ok) {
-        throw new Error("Brak pliku status.json na GitHub Pages");
+        throw new Error("Plik status.json nieodnaleziony");
       }
 
       const data = await response.json();
@@ -57,13 +53,13 @@
         text.innerText = "OFFLINE";
       }
     } catch (error) {
-      console.error("Błąd pobierania statusu:", error);
+      console.error("Błąd odczytu statusu:", error);
       dot.className = "status-dot offline";
       text.innerText = "OFFLINE"; 
     }
   }
 
-  // Uruchomienie sprawdzania statusu (co 15 sekund)
+  // Sprawdzanie statusu od razu i odświeżanie co 15 sekund
   checkValheimServer();
   setInterval(checkValheimServer, 15000);
 </script>
